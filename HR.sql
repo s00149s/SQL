@@ -175,6 +175,128 @@ SELECT first_name
 FROM employees
 WHERE first_name LIKE '__a_';
 
+----------------------------------
+-- DATE Format
+----------------------------------
+
+-- 날짜 형식 확인( 현재 데이터가 어떤 형식의 날짜 표기방법을 쓰고있는가)
+SELECT * FROM nls_session_parameters;
+WHERE parameter = 'NLS_DATE_FORMAT'
+
+-- 현재 날짜와 시간
+SELECT sysdate
+FROM dual; -- dual 가상 테이블로부터 확인 -> 단일행
+
+SELECT sysdate
+FROM employees; -- 테이블로부터 받아오므로 테이블 내 행 갯수만큼을 반환
+
+-- DATE 관련 함수
+SELECT sysdate, -- 현재 날짜와 시간
+	ADD_MONTH(sysdate, 2), -- 2개월 후의 날짜
+	MONTHS_BETWEEN('99/12/31', sysdate) -- 1999년 12월 31일 ~ 현재의 달수
+	NEXT_DAY(sysdate, 7) -- 현재 날짜 이후의 첫번째 7요일
+	ROUND(TO_DATE('2021-05-17', 'YYYY-MM-DD'), 'MONTH'), -- MONTH 정보로 반올림
+	TRUNC(TO_DATE('2021-05-17', 'YYYY-MM-DD'), 'MONTH')
+FROM dual;
+
+-- 현재 날짜 기준, 입사한지 몇 개월 지났는가?
+SELECT first_name, 
+	hire_date, 
+	ROUND(MONTHS_BETWEEN(sysdate, hire_date))
+FROM employees;
+
+-- TO_NUMBER(s, frm) : 문자열 -> 수치형
+-- TO_DATE(s, frm) : 문자열 -> 날짜형
+-- TO_CHAR(o, fmt) : 숫자, 날짜, 문자형
+
+-- TO_CHAR
+SELECT first_name, hire_date, TO_CHAR(hire_date), 'YYYY-MM-DD HH24:MI:SS')
+FROM employees;
+
+-- 현재 날짜의 포멧
+SELECT sysdate, TO_CHAR(sysdate, 'YYYY-MM-DD HH24:MI:SS')
+FROM dual;
+
+SELECT TO_CHAR(123456789.0123, '999,999,999.99')
+FROM dual;
+
+-- 연봉 정보 문자열로 포매팅
+SELECT first_name, TO_CHAR(salary * 12, '$999,999.99') SAL
+FROM employees;
+
+--TO_NUMBER : 문자열 -> 숫자
+SELECT TO_NUMBER('1999', '999,999'), TO_NUMBER('$1,350.99','$999,999.99')
+FROM dual;
+
+--TO_DATE : 문자열 -> 날짜
+SELECT TO_DATE('2021-05-05 12:30', 'YYYY-MM-DD HH24:MI')
+FROM dual;
+
+-- DATE 연산
+-- DATE +(-) NUMBER : 날짜에 일수 더한다(뺀다) -> Date출력
+-- Date - Date : 날짜에서 날짜를 뺀 일수
+-- Date + Number / 24 : 날짜에 시간을 더할 때 일수를 24시간으로 나눈 값을 더한다(뺀다)
+
+SELECT TO_CHAR(sysdate, 'YY/MM/DD HH24:MI'
+    sysdate + 1,    -- 1일 후
+    sysdate - 1,    -- 1일 전
+    sysdate - TO_DATE('2012-09-24', 'YYYY-MM-DD'),  -- 두 날짜의 차이 일수
+    sysdate +13 / 24    -- 13시간 후
+FROM dual;
+
+-------------------------
+-- NULL 관련 함수
+-------------------------
+
+-- nvl 함수
+SELECT first_name, 
+    salary,
+    commission_pct,
+    salary + (salary * nvl(commission_pct,0))   -- commission_pct is null -> 0으로 변경
+FROM employees;
+
+-- nvl2 함수
+-- nvl2(표현식, null이 아닐 때의 식, null일 때의 식)
+SELECT first_name, 
+    salary,
+    commission_pct,
+    salary + (salary * nvl2(commission_pct, salary * commission_pct,0))   
+FROM employees;
+
+-- CASE 함수
+-- 보너스를 지급하기로 했습니다.
+-- AD 관련 직원에게는 20%, SA관련 직원에게는 10%, IT 관련 직원에게는 8%
+-- 나머지에게는 5%의 보너스 지급
+SELECT first_name, job_id, salary, SUBSTR(job_id, 1, 2),
+    CASE SUBSTR(job_id, 1, 2) WHEN 'AD' THEN salary * 0.2
+                                WHEN 'SA' THEN salary * 0.1
+                                WHEN 'IT' THEN salary * 0.08
+                                ELSE salary * 0.05
+    END as bonus
+FROM employees;
+
+-- Decode
+SELECT first_name, job_id, salary, SUBSTR(job_id, 1, 2),
+    DECODE(SUBSTR(job_id, 1, 2),
+        'AD', salary * 0.2,
+        'SA', salary * 0.1,
+        'IT', salary * 0.08,
+        salary * 0.05) as bonus
+FROM employees;
+
+-- 연습문제
+-- department_id <=30 -> A-group
+-- department_id <=50 -> B-group
+-- department_id <=100 -> C-group
+-- 나머지 : REMAINDER
+SELECT first_name, department_id,
+    CASE WHEN department_id <= 30 THEN 'A-GROUP'
+         WHEN department_id <= 50 THEN 'B-GROUP'
+         WHEN department_id <= 100 THEN 'C-GROUP'
+         ELSE 'REMAINDER'
+    END as team
+FROM employees
+ORDER BY team;
 
 
 
