@@ -34,6 +34,7 @@ SELECT emp.first_name,
     dept.department_name
 FROM employees emp JOIN departments dept
                     USING (department_id);
+                    
 SELECT first_name,
     department_name
 FROM employees emp JOIN departments dept
@@ -488,3 +489,69 @@ FROM employees emp LEFT OUTER JOIN employees man
 START WITH emp.manager_id IS NULL
 CONNECT BY PRIOR emp.employee_id = emp.manager_id
 ORDER BY level;
+
+
+
+---------------------------
+-- 연습문제
+---------------------------
+-- 연습문제 1
+-- 직원들의 사번, 이름, 성과 부서명을 조회하여 부서이름 오름차순, 사번 내림차순 으로 정렬
+SELECT employee_id,
+    first_name,
+    last_name,
+    department_name
+FROM employees, departments
+ORDER BY department_name ASC,
+    employee_id DESC;
+    
+-- 연습문제 2
+-- 직원들의 사번, 이름, 급여, 부서명, 현재업무를 사번 오름차순 으로 정렬
+-- 부서가 없는 Kimberely(사번 178)은 표시하지 않습니다.
+SELECT employee_id,
+    first_name,
+    salary,
+    department_name,
+    job_title
+FROM employees emp,
+    departments dept,
+    jobs j
+WHERE emp.department_id = dept.department_id AND 
+emp.job_id = j.job_id
+ORDER BY employee_id ASC;
+
+-- 연습문제 2-1
+-- 연습문제 2에서 부서가 없는 Kimberly까지 출력
+SELECT employee_id,
+    first_name,
+    salary,
+    department_name,
+    job_title
+FROM employees emp,
+    departments dept,
+    jobs j
+WHERE emp.department_id = dept.department_id (+)
+AND emp.job_id = j.job_id
+ORDER BY employee_id ASC;
+
+-- 연습문제 3
+-- 도시별로 위치한 부서 파악
+-- 도시아이디, 도시명, 부서명, 부서아이디를 도시아이디(오름차순)로 정렬
+-- 부서가 없는 도시는 표시하지 않습니다.
+SELECT 
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
