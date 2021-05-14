@@ -94,3 +94,63 @@ SELECT * FROM tab;
 -- 휴지통 비우기
 PURGE RECYCLEBIN;
 SELECT * FROM tab;
+
+DESC book;
+
+-- 테이블 추가
+CREATE TABLE author (
+    author_id NUMBER(10),
+    author_name VARCHAR2(100) NOT NULL, -- 컬럼 제약 조건 NOT NULL
+    author_desc VARCHAR2(500),
+    PRIMARY KEY (author_id) -- 테이블 제약 조건
+);
+DESC book;
+DESC author;
+
+-- book 테이블의 author 컬럼을 삭제
+-- 나중에 author 테이블과 연결
+ALTER TABLE book DROP COLUMN author;
+DESC book;
+
+-- author.author_id를 참조하기 위한 author_id 컬럼을 book테이블에 추가
+ALTER TABLE book ADD (author_id NUMBER(10));
+DESC book;
+
+-- book.book_id를 NUMBER(10)으로 바꿔 봅시다
+ALTER TABLE book MODIFY (book_id NUMBER(10));
+DESC book;
+
+-- book.author_id -> author.author_id를 참조하도록 변경(FK)
+ALTER TABLE book
+ADD CONSTRAINT
+    fk_author_id FOREIGN KEY(author_id)
+                    REFERENCES author(author_id);
+
+-- book 테이블의 author_id 컬럼에
+--      author 테이블의 author_id(PK)를 참조하는 외래 키(FK) 추가
+DESC book;
+
+----------------------------
+-- DATA DICTIONARY
+----------------------------
+-- 오라클이 관리하는 데이터베이스 관련 정보들을 모아둔 특별한 용도의 테이블
+-- USER_ : 현재 로그인한 사용자 레벨의 객체들
+-- ALL_ : 사용자 전체 대상의 정보
+-- DBA_ : 데이터베이스 전체에 관련된 정보들(관리자 전용)
+
+-- 모든 딕셔너리 확인
+SELECT * FROM DICTIONARY;
+
+-- 사용자 스키마 객체 확인 : USER_OBJECTS
+SELECT * FROM USER_OBJECTS;
+SELECT object_name, object_type FROM USER_OBJECTS;
+
+-- 내가 가진 제약 조건 : USER_CONSTRAINTS
+SELECT * FROM USER_CONSTRAINTS;
+
+-- BOOK 테이블에 걸려 있는 제약조건 확인
+SELECT constraint_name,
+    constraint_type,
+    search_condition
+FROM USER_CONSTRAINTS
+WHERE table_name = 'BOOK';
