@@ -334,6 +334,46 @@ ORDER BY max_salary DESC;
 
 -- 연습문제 5
 
+SELECT first_name,
+    salary,
+    NVL(commission_pct,0)
+FROM employees
+WHERE salary BETWEEN 10000 AND 13999
+ORDER BY salary DESC;
+
+-- 연습문제 6
+SELECT first_name, 
+    salary, 
+    TO_CHAR(hire_date,'YYYY-MM'),
+    department_id
+FROM employees
+WHERE department_id IN (10, 90, 100);
+
+-- 연습문제 7
+SELECT first_name,
+    salary
+FROM employees
+WHERE first_name LIKE '%S'
+OR first_name LIKE '%s';
+
+-- 연습문제 8
+SELECT department_name
+FROM departments
+ORDER BY LENGTH(department_name) DESC;
+
+-- 연습문제 9
+SELECT country_name
+FROM countries
+ORDER BY UPPER(country_name) ASC;
+
+-- 연습문제 10
+SELECT first_name,
+    salary,
+    SUBSTR(phone_number,1,3) || '-' || SUBSTR(phone_number,4,6),
+    TO_DATE(hire_date, 'YYYY/MM/DD')
+FROM employees
+WHERE hire_date < '03/12/31';
+
 
 
 

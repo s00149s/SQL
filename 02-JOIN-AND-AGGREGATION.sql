@@ -30,6 +30,7 @@ FROM employees emp, departments dept
 WHERE emp.department_id = dept.department_id;
 
 -- INNER JOIN
+-- join 조건을 만족하는 튜플 출력 -> 짝이 없는 튜플 출력X
 SELECT emp.first_name,
     dept.department_name
 FROM employees emp JOIN departments dept
@@ -210,7 +211,7 @@ SELECT AVG(salary) FROM employees;
 SELECT AVG(commission_pct) FROM employees; -- 22%
 
 -- null을 0으로 치환하고 통계를 다시 잡아봅시다
-SELECT AVG(NVL(comission_pct, )) FROM employees; -- 7%
+SELECT AVG(NVL(comission_pct, 0)) FROM employees; -- 7%
 -- 집계함수 수행시 null(결측치) 값을 처리할 방식을 정책으로 결정하고 수행
 
 -- 사원들이 받는 급여의 최솟값, 최댓값, 평균, 중앙값
@@ -241,7 +242,7 @@ ORDER BY department_id;
 SELECT department_id, AVG(salary)
 FROM employees
 WHERE AVG(salary) >= 7000
-GROUP BY department_id;
+GROUP BY department_id; -- 불가
 
 -- 집계 함수 실행 이전에 WHERE 절의 조건을 검사
 -- 집계 함수 컬럼은 WHERE 절에서 사용할 수 없다
@@ -253,7 +254,7 @@ SELECT department_id, AVG(salary)
 FROM employees
 GROUP BY department_id
 	HAVING AVG(salary) >= 7000	-- 집계 이후에 조건을 검사
-ORDER BY deparment_id;
+ORDER BY department_id;
 
 ---------------
 -- 분석 함수
@@ -309,6 +310,7 @@ WHERE salary > ( SELECT MEDIAN(salary) FROM employees)
 ORDER BY salary DESC;
 
 SELECT first_name, hire_date FROM employees;
+
 -- 사원 중, Susan 보다 늦게 입사한 사원의 명단
 -- 쿼리 1. 이름이 Susan인 사원의 입사일을 추출하는 쿼리
 SELECT hire_date FROM employees
@@ -482,8 +484,8 @@ CONNECT BY PRIOR employee_id = manager_id
 ORDER BY level;
 
 -- JOIN을 이용해서 manager 이름까지 확인
-SELECT level, emp.employee_id, emp.first_name || ' ' || emp.last_name,
-    emp.manager_id, man.employee_id, man.first_name || ' ' || man.last_name
+SELECT level, emp.employee_id, emp.first_name || ' ' || emp.last_name as name,
+    emp.manager_id, man.employee_id, man.first_name || ' ' || man.last_name as manager_name
 FROM employees emp LEFT OUTER JOIN employees man
                         ON emp.manager_id = man.employee_id
 START WITH emp.manager_id IS NULL
@@ -493,7 +495,7 @@ ORDER BY level;
 
 
 ---------------------------
--- 연습문제
+-- 조인 연습문제
 ---------------------------
 -- 연습문제 1
 -- 직원들의 사번, 이름, 성과 부서명을 조회하여 부서이름 오름차순, 사번 내림차순 으로 정렬
@@ -538,20 +540,215 @@ ORDER BY employee_id ASC;
 -- 도시별로 위치한 부서 파악
 -- 도시아이디, 도시명, 부서명, 부서아이디를 도시아이디(오름차순)로 정렬
 -- 부서가 없는 도시는 표시하지 않습니다.
-SELECT 
+SELECT loc.location_id,
+    city,
+    department_name,
+    department_id
+FROM departments dept, locations loc
+WHERE dept.location_id = loc.location_id
+ORDER BY location_id ASC;
 
-    
+-- 연습문제 3-1
+-- 부서가 없는 도시도 표시
+SELECT loc.location_id,
+    city,
+    department_name,
+    department_id
+FROM departments dept, locations loc
+WHERE dept.location_id (+) = loc.location_id 
+ORDER BY location_id ASC;
+
+-- 연습문제 4
+-- 지역에 속한 나라들을 지역이름, 나라이름으로 출력
+-- 지역이름(오름차순), 나라이름(내림차순)
+SELECT region_name,
+    country_name
+FROM countries co, regions re
+WHERE co.region_id (+) = re.region_id
+ORDER BY region_name ASC, country_name DESC;
+
+-- 연습문제 5
+-- 자신의 매니저보다 채용일이 빠른 사원의 
+-- 사번, 이름, 채용일, 매니저이름, 매니저 입사일 조회
+SELECT emp.employee_id,
+    emp.first_name,
+    emp.hire_date,
+    man.first_name,
+    man.hire_date
+FROM employees emp, employees man
+WHERE emp.manager_id = man.employee_id
+AND man.hire_date > emp.hire_date;
+
+-- 연습문제 6
+-- 나라별 부서 위치 현황 확인
+-- 나라명, 나라아이디, 도시명, 도시아이디, 부서명, 부서아이디를 나라명(오름차순) 정렬
+-- 값이 없는 경우 표시 X
+SELECT co.country_name,
+    co.country_id,
+    loc.city,
+    loc.location_id,
+    dept.department_name,
+    dept.department_id
+FROM countries co, locations loc JOIN departments dept
+                                    ON dept.location_id = loc.location_id
+WHERE co.country_id = loc.country_id
+ORDER BY country_name ASC;
+
+-- 연습문제 7
+-- job_history테이블에서 과거의 업무아이디가 'AC_ACCOUNT'로 근무한 사원의
+-- 사번, 이름(풀네임), 업무아이디, 시작일, 종료일
+SELECT emp.employee_id,
+    emp.first_name || ' ' || emp.last_name full_name,
+    emp.job_id,
+    j.start_date,
+    j.end_date
+FROM employees emp, job_history j
+WHERE emp.employee_id = j.employee_id
+AND j.job_id = 'AC_ACCOUNT';
+
+-- 연습문제 8
+-- 각 부서에 대해서 부서번호, 부서이름, 매니저이름, 위치한 도시, 나라이름, 지역구분이름 출력
+SELECT man.department_id,
+    dept.department_name,
+    man.first_name AS manager_name,
+    loc.city,
+    co.country_name,
+    re.region_name
+FROM departments dept,
+    locations loc,
+    countries co,
+    regions re,
+    (SELECT 
+        man.first_name,
+        man.department_id
+        FROM employees emp, employees man
+        WHERE emp.manager_id = man.employee_id
+        AND man.department_id = emp.department_id) man
+WHERE dept.department_id = man.department_id
+AND dept.location_id = loc.location_id
+AND loc.country_id = co.country_id
+AND co.region_id = re.region_id;
 
 
+-- 연습문제 9
+-- 각 사원에 대하여 사번, 이름, 부서명, 매니저의 이름 조회
+-- 부서가 없는 직원도 조회
+SELECT emp.employee_id,
+    emp.first_name,
+    dept.department_name,
+    man.first_name
+FROM departments dept, employees emp, employees man                              
+WHERE emp.department_id  = dept.department_id
+AND emp.manager_id  = man.employee_id (+);
 
 
+---------------------------
+-- 서브쿼리 연습문제
+---------------------------
+
+-- 연습문제 1
+-- 평균 급여보다 적은 급여를 받는 직원
+SELECT first_name, salary
+FROM employees
+WHERE salary < (SELECT AVG(salary) FROM employees);
+
+-- 연습문제 2
+-- 평균급여 이상, 최대급여 이하의 월급을 받는 사원의
+-- 직원번호, 이름, 급여, 평균급여, 최대급여를 급여의 오름차순으로 정렬
+SELECT emp.employee_id,
+    emp.first_name,
+    emp.salary,
+    (j.max_salary + j.min_salary)/2 AVERAGE,
+    j.max_salary
+FROM employees emp, jobs j
+WHERE  emp.job_id = j.job_id
+AND salary >= (SELECT AVG(salary) FROM employees)
+AND salary <= (SELECT MAX(salary) FROM employees)
+ORDER BY emp.salary ASC;
+
+-- 연습문제 3
+-- Steven King이 소속된 부서가 있는 곳의 주소
+-- 도시아이디, 거리명, 우편번호, 도시명, 주, 나라아이디 출력
+
+SELECT  loc.location_id,
+        loc.street_address,
+        loc.postal_code,
+        loc.city,
+        loc.state_province,
+        loc.country_id
+FROM locations loc, employees emp, departments dept
+WHERE emp.department_id = dept.department_id
+AND dept.location_id = loc.location_id
+AND emp.first_name || ' ' || emp.last_name = 'Steven King';
+
+-- 연습문제 4
+-- job_id가 ST_MAN인 직원의 급여보다 작은 직원의 사번, 이름, 급여 출력
+-- 급여의 내림차순으로 출력(ANY 연산자 이용)
+SELECT employee_id,
+    first_name,
+    salary
+FROM employees
+WHERE salary < ANY(SELECT salary
+                    FROM employees
+                    WHERE job_id = 'ST_MAN');
+                    
+-- 연습문제 5
+-- 각 부서별로 최고 급여를 받는 사원의 직원번호, 이름, 급여, 부서번호 조회
+-- 급여의 내림차순 정렬
+-- 조건절비교, 테이블 조인 2가지 방법 작성
+-- 1. 조건절 비교
+SELECT employee_id,
+    first_name,
+    salary,
+    department_id
+FROM employees
+WHERE (department_id, salary) IN (SELECT department_id, MAX(salary) salary FROM employees GROUP BY department_id)
+ORDER BY department_id;
+
+-- 2. 테이블 조인
+SELECT employee_id,
+        first_name,
+        emp.salary,
+        sal.department_id
+FROM employees emp, (SELECT department_id, MAX(salary) salary FROM employees GROUP BY department_id) sal
+WHERE emp.department_id = sal.department_id
+AND emp.salary = sal.salary
+ORDER BY emp.department_id ASC;
+
+-- 연습문제 6
+-- 각 업무 별로 연봉의 총합 구하기
+-- 연봉 총합이 가장 높은 업무부터 업무명과 연봉총합 조회
 
 
+SELECT job_title, sal.salary 
+FROM jobs j, employees emp, (SELECT job_id, SUM(salary) salary
+                        FROM employees
+                        GROUP BY job_id) sal
+WHERE j.job_id = sal.job_id
+AND emp.salary = sal.salary
+ORDER BY sal.salary DESC;
 
+-- 연습문제 7
+-- 부서 평균 급여보다 연봉이 많은 직원의
+-- 직원번호, 이름, 급여 조회
 
+SELECT employee_id, first_name, salary
+FROM employees outer
+WHERE salary >  (SELECT ROUND(AVG(salary),2)
+                    FROM employees
+                    WHERE department_id = outer.department_id);
 
-
-
+-- 연습문제 8
+-- 직원 입사일이 11번째에서 15번째의 직원의
+-- 사번, 이름, 급여, 입사일을 입사일 순서로 출력
+SELECT rownum   
+FROM (SELECT employee_id,
+        first_name,
+        salary,
+        hire_date
+        FROM employees
+        ORDER BY hire_date)
+WHERE ROWNUM >= 11;
 
 
 
