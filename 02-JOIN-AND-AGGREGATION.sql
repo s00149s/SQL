@@ -741,14 +741,13 @@ WHERE salary >  (SELECT ROUND(AVG(salary),2)
 -- 연습문제 8
 -- 직원 입사일이 11번째에서 15번째의 직원의
 -- 사번, 이름, 급여, 입사일을 입사일 순서로 출력
-SELECT rownum   
-FROM (SELECT employee_id,
+SELECT   employee_id,
         first_name,
         salary,
-        hire_date
-        FROM employees
-        ORDER BY hire_date)
-WHERE ROWNUM >= 11;
+        hire_date,
+        ROW_NUMBER() OVER (ORDER BY hire_date ASC) as "hire"
+FROM employees
+WHERE hire >= 11;
 
 
 

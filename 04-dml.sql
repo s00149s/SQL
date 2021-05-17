@@ -54,7 +54,7 @@ SELECT * FROM author;
 
 -- WHERE 절을 명시하지 않으면 모든 레코드가 변경
 ROLLBACK;
-UPDATAE author SET author_desc='알쓸신잡 출연'
+UPDATE author SET author_desc='알쓸신잡 출연'
 WHERE author_id=2;
 
 SELECT * FROM author;
