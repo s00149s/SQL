@@ -167,3 +167,19 @@ ALTER SEQUENCE my_seq
 
 SELECT my_seq.CURRVAL FROM dual;    -- 시퀀스 현재 값
 SELECT my_seq.NEXTVAL FROM dual;    -- 시퀀스 +2씩 증가 후 반환
+
+-- 시퀀스를 위한 딕셔너리
+SELECT * FROM USER_SEQUENCES;
+
+SELECT * FROM USER_OBJECTS WHERE object_type='SEQUENCE';
+
+-- book_id를 위한 시퀀스도 추가해 봅시다
+SELECT MAX(book_id) FROM book;
+
+CREATE SEQUENCE seq_book_id
+    START WITH 3
+    MINVALUE 1
+    INCREMENT BY 1
+    MAXVALUE 1000000;
+    
+SELECT * FROM USER_SEQUENCES;

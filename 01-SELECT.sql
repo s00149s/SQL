@@ -354,8 +354,7 @@ WHERE department_id IN (10, 90, 100);
 SELECT first_name,
     salary
 FROM employees
-WHERE first_name LIKE '%S'
-OR first_name LIKE '%s';
+WHERE upper(first_name) LIKE '%S%';
 
 -- 연습문제 8
 SELECT department_name
@@ -363,14 +362,14 @@ FROM departments
 ORDER BY LENGTH(department_name) DESC;
 
 -- 연습문제 9
-SELECT country_name
+SELECT UPPER(country_name)
 FROM countries
 ORDER BY UPPER(country_name) ASC;
 
 -- 연습문제 10
 SELECT first_name,
     salary,
-    SUBSTR(phone_number,1,3) || '-' || SUBSTR(phone_number,4,6),
+    REPLACE(phone_number, '.', '-') phone_number,
     TO_DATE(hire_date, 'YYYY/MM/DD')
 FROM employees
 WHERE hire_date < '03/12/31';
@@ -378,9 +377,99 @@ WHERE hire_date < '03/12/31';
 -----------------------------
 -- 연습문제 집계
 -----------------------------
-SELECT COUNT(employee_id)
+-- 연습문제 1
+-- 매니저가 있는 직원 수 출력
+SELECT COUNT(employee_id) haveMngCnt
 FROM employees
-WHERE 
+WHERE manager_id IS NOT NULL;
 
+-- 연습문제 2
+-- 직원 중 최고임금, 최저임금, 두 임금의 차 출력
+SELECT MAX(salary) || ',' || MIN(salary) as "최고임금, 최저임금",
+        MAX(salary) - MIN(salary) as "최고임금 - 최저임금"
+FROM employees;
 
+-- 연습문제 3
+-- 마지막 신입사원이 들어온 날짜
+SELECT TO_CHAR(MAX(hire_date), 'YYYY"년" MM"월" DD"일"')
+FROM employees;
+
+-- 연습문제 4
+-- 부서별로 평균임금, 최저임금, 최고임금을 부서아이디와 함께 출력
+-- 부서번호 내림차순 정렬
+SELECT department_id,
+    ROUND(AVG(salary),2),
+    MAX(salary),
+    MIN(salary)
+FROM employees
+WHERE department_id IS NOT NULL
+GROUP BY department_id
+ORDER BY department_id DESC;
+
+-- 연습문제 5
+-- 업무별로 평균임금, 최고임금, 최저임금을 업무아이디와 함께 출력
+-- 최저임금 내림차순, 평균임금(소수점 반올림) 오름차순 으로 정렬
+SELECT job_id,
+    ROUND(AVG(salary)),
+    MAX(salary),
+    MIN(salary)
+FROM employees
+GROUP BY job_id
+ORDER BY MIN(salary) DESC, ROUND(AVG(salary)) ASC;
+
+-- 연습문제 6
+-- 가장 오래 근속한 직원의 입사일
+-- ex) 2001-01-13 토요일 형식으로 출력
+SELECT TO_CHAR(MIN(hire_date), 'YYYY-MM-DD DAY') as hire_date
+FROM employees;
+
+-- 연습문제 7
+-- 평균임금과 최저임금의 차이가 2000미만인 부서, 평균임금, 최저임금
+-- (평균임금-최저임금)을 (평균임금-최저임금) 내림차순 정렬
+SELECT department_id,
+    ROUND(AVG(salary)),
+    MIN(salary),
+    (ROUND(AVG(salary)) - MIN(salary)) as gap
+FROM employees
+GROUP BY department_id
+HAVING ROUND(AVG(salary)) - MIN(salary) < 2000
+ORDER BY gap DESC;
+
+-- 연습문제 8
+-- 업무별로 최고임금과 최저임금의 차이를 내림차순으로 출력
+SELECT job_id,
+    (ROUND(AVG(salary)) - MIN(salary)) as gap
+FROM employees
+GROUP BY job_id
+ORDER BY gap DESC;
+
+-- 연습문제 9
+-- 2005년 이후 입사자중 관리자별로 평균급여 최소급여 최대급여 
+-- 관리자별 평균급여가 5000이상 중에 평균급여, 최소급여, 최대급여 출력
+-- 평균급여 내림차순 정렬, 평균급여 소수점 첫째자리 반올림
+
+SELECT manager_id,
+    ROUND(AVG(salary),1),
+    MIN(salary),
+    MAX(salary)
+FROM employees
+WHERE hire_date >= '2005/01/01'
+GROUP BY manager_id
+HAVING ROUND(AVG(salary),1) >= 5000
+ORDER BY ROUND(AVG(salary),1) DESC;
+    
+-- 연습문제 10
+-- 입사일 02/12/31 이전이면 '창립멤버'
+-- 03년은 '03년입사', 04년은 '04년입사' 이후 입사자는 '상장이후입사'
+-- optDate 컬럼의 데이터로 출력
+-- 입사일 오름차순 정렬
+SELECT first_name,
+    CASE WHEN hire_date <= '02/12/31' THEN '창립멤버'
+            WHEN hire_date BETWEEN '03/01/01' and '03/12/31' THEN '03년입사'
+            WHEN hire_date BETWEEN '04/01/01' and '04/12/31' THEN '04년입사'
+            ELSE '상장이후입사' 
+    END as optDate,
+    hire_date
+FROM employees
+ORDER BY hire_date ASC;
 
