@@ -299,8 +299,9 @@ FROM employees
 ORDER BY team;
 
 -----------------------------
--- 연습문제 1
+-- 연습문제 기본
 -----------------------------
+-- 연습문제 1
 SELECT first_name || ' ' || last_name 이름,
     salary 월급,
     phone_number 전화번호,
@@ -374,6 +375,12 @@ SELECT first_name,
 FROM employees
 WHERE hire_date < '03/12/31';
 
+-----------------------------
+-- 연습문제 집계
+-----------------------------
+SELECT COUNT(employee_id)
+FROM employees
+WHERE 
 
 
 

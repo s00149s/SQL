@@ -88,7 +88,7 @@ SELECT * FROM it_emp;
 SELECT * FROM tab;
 
 -- 테이블 삭제
-DROP TABLE it_emp;
+DROP TABLE author;
 SELECT * FROM tab;
 
 -- 휴지통 비우기
